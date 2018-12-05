@@ -38,4 +38,36 @@ checks.highWaterMark = {
   verify: (value) => common.isInteger(value)
 }
 
+/**
+ * Make checks set.
+ * @param {object} set - Empty set to seed.
+ * @returns {object} Completed set.
+ */
+function makeSet (set) {
+  for (const key in set) {
+    if (typeof checks[key] === 'undefined') {
+      throw new Error(`You try to make checks set with invalid property ${key}.`)
+    }
+    set[key] = checks[key]
+  }
+  return set
+}
+
+const checksDefaultOptions = makeSet({
+  path: null,
+  time: null,
+  size: null,
+  files: null,
+  compress: null,
+  highWaterMark: null
+})
+
+const checksList = {
+  checksDefaultOptions
+}
+
 module.exports = checks
+module.exports.checks = checks
+module.exports.makeSet = makeSet
+module.exports.checksList = checksList
+module.exports.checksDefaultOptions = checksDefaultOptions

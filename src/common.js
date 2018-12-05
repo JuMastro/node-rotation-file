@@ -1,4 +1,13 @@
 /**
+ * Check if value is defined.
+ * @param {any} value - Tested value.
+ * @returns {boolean}
+ */
+function isDefined (value) {
+  return typeof value !== 'undefined'
+}
+
+/**
  * Check if value is an integer.
  * @param {any} value - Tested value.
  * @returns {boolean}
@@ -36,6 +45,7 @@ function stringMatch (value, regex) {
 }
 
 module.exports = {
+  isDefined,
   isInteger,
   isNull,
   isString,
