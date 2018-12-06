@@ -2,22 +2,22 @@ const { Writable } = require('stream')
 
 class RotationFileStream extends Writable {
   constructor (options = {}) {
-    super (options)
+    super(options)
   }
 
-  _init() {}
+  _init () {}
 
-  _rotate() {}
+  _rotate () {}
 
-  _open() {}
+  _open () {}
 
-  _close() {}
+  _close () {}
 
-  _drain() {}
+  _drain () {}
 
-  _write() {}
+  _write () {}
 
-  _writev() {}
+  _writev () {}
 }
 
 module.exports = (options) => new RotationFileStream(options)

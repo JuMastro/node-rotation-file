@@ -2,7 +2,7 @@ class CheckResponse {
   /**
    * @param {object} data - Data that must be validated.
    */
-  constructor(data) {
+  constructor (data) {
     this.data = data
     this.errors = []
   }
