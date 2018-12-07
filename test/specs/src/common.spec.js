@@ -11,6 +11,15 @@ describe('src/common.js', () => {
     expect(() => check({})).toThrowError(TypeError)
   })
 
+  test('getTagObjectConvertedValue()', () => {
+    const map = { a: 1, b: 10 }
+    const check = (obj) => expect(common.getTagObjectConvertedValue(obj, map))
+    check({ value: 10, unit: 'a' }).toEqual(10)
+    check({ value: 10, unit: 'b' }).toEqual(100)
+    check({ value: 10, unit: '?' }).toEqual(null)
+    check({ value: undefined, unit: 'a' }).toEqual(null)
+  })
+
   test('isArray()', () => {
     const check = (value) => expect(common.isArray(value))
     check([{ test: true }]).toEqual(true)

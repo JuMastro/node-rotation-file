@@ -12,6 +12,20 @@ function getTagObject (tag) {
 }
 
 /**
+ * Get converted value from tag object using unit hashmap.
+ * @param {object} obj - Tag object.
+ * @param {object} hashmap - Unit hashmap to make convertion.
+ * @returns {null|number} Converted value
+ */
+function getTagObjectConvertedValue (obj, hashmap) {
+  const isValidItem = obj && isRealObject(obj) && isInteger(obj.value)
+
+  return isValidItem && isDefined(hashmap[obj.unit])
+    ? obj.value * hashmap[obj.unit]
+    : null
+}
+
+/**
  * Check if value is an array.
  * @param {any} value - Tested value.
  * @returns {boolean}
@@ -78,6 +92,7 @@ function stringMatch (value, regex) {
 
 module.exports = {
   getTagObject,
+  getTagObjectConvertedValue,
   isArray,
   isDefined,
   isInteger,

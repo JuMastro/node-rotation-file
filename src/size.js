@@ -1,4 +1,4 @@
-const { getTagObject, isDefined, isInteger, isRealObject } = require('./common.js')
+const common = require('./common.js')
 
 /**
  * Size units hashmap.
@@ -24,17 +24,7 @@ const unitsHashmap = {
  * @returns {null|number} sizeObject in bits.
  */
 function getBitsFromSizeObject (sizeObject) {
-  if (!sizeObject) {
-    return null
-  }
-
-  const isValidUnit = isDefined(unitsHashmap[sizeObject.unit])
-  const isValidInteger = isInteger(sizeObject.value)
-  const isValidObject = isRealObject(sizeObject)
-
-  return isValidObject && isValidInteger && isValidUnit
-    ? sizeObject.value * unitsHashmap[sizeObject.unit]
-    : null
+  return common.getTagObjectConvertedValue(sizeObject, unitsHashmap)
 }
 
 /**
@@ -45,7 +35,7 @@ function getBitsFromSizeObject (sizeObject) {
  * @returns {number} sizetag in bits.
  */
 function unfriendlyze (sizetag) {
-  return getBitsFromSizeObject(getTagObject(sizetag))
+  return getBitsFromSizeObject(common.getTagObject(sizetag))
 }
 
 module.exports = {
