@@ -4,17 +4,15 @@ describe('src/size.js', () => {
   const sizeModule = require(path.resolve(__root, './src/size.js'))
 
   test('getBitsFromSizeObject()', () => {
-    const check = (value, unit, result) => {
-      expect(sizeModule.getBitsFromSizeObject({ value, unit })).toEqual(result)
-    }
+    const fn = sizeModule.getBitsFromSizeObject
 
-    check(10, 'b', 10)
-    check(10, 'o', 80)
-    check(10, 'k', 81920)
-    check(10, 'm', 83886080)
-    check(10, 'g', 85899345920)
-    check(10, '?', null)
-    check(undefined, 'k', null)
+    expect(fn({ value: 10, unit: 'b' })).toEqual(10)
+    expect(fn({ value: 10, unit: 'o' })).toEqual(80)
+    expect(fn({ value: 10, unit: 'k' })).toEqual(81920)
+    expect(fn({ value: 10, unit: 'm' })).toEqual(83886080)
+    expect(fn({ value: 10, unit: 'g' })).toEqual(85899345920)
+    expect(fn({ value: 10, unit: '?' })).toEqual(null)
+    expect(fn({ value: undefined, unit: 'k' })).toEqual(null)
   })
 
   test('unfriendlyze()', () => {
