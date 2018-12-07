@@ -1,4 +1,13 @@
 /**
+ * Check if value is an array.
+ * @param {any} value - Tested value.
+ * @returns {boolean}
+ */
+function isArray (value) {
+  return Array.isArray(value)
+}
+
+/**
  * Check if value is defined.
  * @param {any} value - Tested value.
  * @returns {boolean}
@@ -14,6 +23,16 @@ function isDefined (value) {
  */
 function isInteger (value) {
   return Number.isInteger(value)
+}
+
+/**
+ * Check if it's a real object.
+ * Check if provided value is typeof object and is not an array.
+ * @param {any} value - Tested value.
+ * @returns {boolean}
+ */
+function isRealObject (value) {
+  return typeof value === 'object' && !isArray(value)
 }
 
 /**
@@ -45,8 +64,10 @@ function stringMatch (value, regex) {
 }
 
 module.exports = {
+  isArray,
   isDefined,
   isInteger,
+  isRealObject,
   isNull,
   isString,
   stringMatch

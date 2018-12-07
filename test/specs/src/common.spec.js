@@ -3,6 +3,13 @@ const path = require('path')
 describe('src/common.js', () => {
   const common = require(path.resolve(__root, './src/common.js'))
 
+  test('isArray()', () => {
+    const check = (value) => expect(common.isArray(value))
+    check([{ test: true }]).toEqual(true)
+    check({ test: true }).toEqual(false)
+    check('string').toEqual(false)
+  })
+
   test('isDefined()', () => {
     const check = (value) => expect(common.isDefined(value))
     check(true).toEqual(true)
@@ -26,6 +33,12 @@ describe('src/common.js', () => {
     check({ test: true }).toEqual(false)
   })
 
+  test('isRealObject()', () => {
+    const check = (value) => expect(common.isRealObject(value))
+    check({ test: true }).toEqual(true)
+    check(['array']).toEqual(false)
+  })
+
   test('isString()', () => {
     const check = (value) => expect(common.isString(value))
     check('str').toEqual(true)
@@ -39,5 +52,6 @@ describe('src/common.js', () => {
     check('str-199940', PATTERN).toEqual(true)
     check('str199940', PATTERN).toEqual(true)
     check('st199940', PATTERN).toEqual(false)
+    check(['str-110'], PATTERN).toEqual(false)
   })
 })
