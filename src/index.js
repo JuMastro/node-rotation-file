@@ -1,5 +1,7 @@
 const { Writable } = require('stream')
 const { checkOptions } = require('./options.js')
+const size = require('./size.js')
+const time = require('./time.js')
 
 class RotationFileStream extends Writable {
   constructor (options = {}) {
@@ -9,8 +11,8 @@ class RotationFileStream extends Writable {
 
     this.path = options.path
     this.compress = options.compress
-    this.maxSize = options.size // TODO: Need to transform
-    this.maxTime = options.time // TODO: Need to transform
+    this.maxSize = size.unfriendlyze(options.size)
+    this.maxTime = time.unfriendlyze(options.time)
     this.maxFiles = options.files
     this.highWaterMark = options.highWaterMark
   }
