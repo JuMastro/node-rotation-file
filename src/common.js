@@ -1,4 +1,17 @@
 /**
+ * Get an object from a tag.
+ * @param {string} tag - Friendly stringify tag.
+ * @returns {null|object} Tag object.
+ */
+function getTagObject (tag) {
+  const parsed = tag.match(/([0-9]+)([A-Za-z])$/)
+
+  return parsed && parsed.length >= 3
+    ? { value: parseInt(parsed[1]), unit: parsed[2] }
+    : null
+}
+
+/**
  * Check if value is an array.
  * @param {any} value - Tested value.
  * @returns {boolean}
@@ -64,6 +77,7 @@ function stringMatch (value, regex) {
 }
 
 module.exports = {
+  getTagObject,
   isArray,
   isDefined,
   isInteger,

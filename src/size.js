@@ -1,4 +1,4 @@
-const { isDefined, isInteger, isRealObject } = require('./common.js')
+const { getTagObject, isDefined, isInteger, isRealObject } = require('./common.js')
 
 /**
  * Size units hashmap.
@@ -16,19 +16,6 @@ const unitsHashmap = {
   'k': 8192,
   'm': 8388608,
   'g': 8589934592
-}
-
-/**
- * Get an object from a tag.
- * @param {string} tag - Friendly stringify tag.
- * @returns {null|object} Tag object.
- */
-function getTagObject (tag) {
-  const parsed = tag.match(/([0-9]+)([A-Za-z])$/)
-
-  return parsed && parsed.length >= 3
-    ? { value: parseInt(parsed[1]), unit: parsed[2] }
-    : null
 }
 
 /**
@@ -62,7 +49,6 @@ function unfriendlyze (sizetag) {
 }
 
 module.exports = {
-  getTagObject,
   getBitsFromSizeObject,
   unfriendlyze,
   unitsHashmap

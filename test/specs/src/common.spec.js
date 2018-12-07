@@ -3,6 +3,14 @@ const path = require('path')
 describe('src/common.js', () => {
   const common = require(path.resolve(__root, './src/common.js'))
 
+  test('getTagObject()', () => {
+    const check = (value) => expect(common.getTagObject(value))
+    check('10m').toEqual({ value: 10, unit: 'm' })
+    check('1000024m').toEqual({ value: 1000024, unit: 'm' })
+    check('1mmm').toEqual(null)
+    expect(() => check({})).toThrowError(TypeError)
+  })
+
   test('isArray()', () => {
     const check = (value) => expect(common.isArray(value))
     check([{ test: true }]).toEqual(true)

@@ -3,22 +3,6 @@ const path = require('path')
 describe('src/size.js', () => {
   const sizeModule = require(path.resolve(__root, './src/size.js'))
 
-  test('getTagObject()', () => {
-    expect(sizeModule.getTagObject('10m')).toEqual({
-      value: 10,
-      unit: 'm'
-    })
-
-    expect(sizeModule.getTagObject('1000024m')).toEqual({
-      value: 1000024,
-      unit: 'm'
-    })
-
-    expect(sizeModule.getTagObject('1mmm')).toEqual(null)
-
-    expect(() => sizeModule.getTagObject({})).toThrowError(TypeError)
-  })
-
   test('getBitsFromSizeObject()', () => {
     const check = (value, unit, result) => {
       expect(sizeModule.getBitsFromSizeObject({ value, unit })).toEqual(result)
