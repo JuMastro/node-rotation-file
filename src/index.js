@@ -15,6 +15,13 @@ class RotationFileStream extends Writable {
     this.maxTime = time.unfriendlyze(options.time)
     this.maxFiles = options.files
     this.highWaterMark = options.highWaterMark
+
+    this.chunks = []
+    this.size = null
+    this.birthime = null
+    this.writer = null
+
+    this._init()
   }
 
   _init () {}
