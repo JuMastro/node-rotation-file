@@ -20,6 +20,20 @@ describe('src/common.js', () => {
     check({ value: undefined, unit: 'a' }).toEqual(null)
   })
 
+  test('getPathObject()', () => {
+    const check = (value) => expect(common.getPathObject(value))
+
+    check('./src/directory/module/file.txt').toEqual({
+      dir: './src/directory/module',
+      file: 'file.txt'
+    })
+
+    check('src/directory/module/file').toEqual({
+      dir: 'src/directory/module',
+      file: 'file'
+    })
+  })
+
   test('isArray()', () => {
     const check = (value) => expect(common.isArray(value))
     check([{ test: true }]).toEqual(true)

@@ -26,6 +26,20 @@ function getTagObjectConvertedValue (obj, hashmap) {
 }
 
 /**
+ * Get path object.
+ * @param {string} target - Targeted file path.
+ * @return {string} File path.
+ */
+function getPathObject (target) {
+  const dir = target.split('/')
+
+  return {
+    file: dir.pop(),
+    dir: dir.join('/')
+  }
+}
+
+/**
  * Check if value is an array.
  * @param {any} value - Tested value.
  * @returns {boolean}
@@ -93,6 +107,7 @@ function stringMatch (value, regex) {
 module.exports = {
   getTagObject,
   getTagObjectConvertedValue,
+  getPathObject,
   isArray,
   isDefined,
   isInteger,
