@@ -19,9 +19,16 @@ class RotationFileStream extends Writable {
     this.chunks = []
     this.size = null
     this.birthime = null
+    this.error = null
     this.writer = null
 
+    this.once('error', this._error)
+
     this._init()
+  }
+
+  end () {
+    // TODO: Should implement 'end' action.
   }
 
   _init () {}
@@ -37,6 +44,15 @@ class RotationFileStream extends Writable {
   _write () {}
 
   _writev () {}
+
+  /**
+   * Capture error & run 'end' action.
+   * @param {object|Error} err
+   */
+  _error (err) {
+    this.error = err
+    this.end()
+  }
 }
 
 module.exports = (options) => new RotationFileStream(options)
