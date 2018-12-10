@@ -11,13 +11,10 @@ describe('src/options.js', () => {
 
     // Only with 'path' as object
     expect(optsModule.checkOptions({ path: EXAMPLE_PATH })).toEqual(builded)
-
     // Only with 'path' as string
     expect(optsModule.checkOptions(EXAMPLE_PATH)).toEqual(builded)
-
     // Empty call need to throw TypeError
     expect(() => optsModule.checkOptions()).toThrowError(TypeError)
-
     // Call with unexpected property
     expect(() => optsModule.checkOptions({ x: '' })).toThrowError(Error)
 

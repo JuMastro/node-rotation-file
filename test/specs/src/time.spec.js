@@ -5,23 +5,21 @@ describe('src/time.js', () => {
 
   test('getMsFromTimeObject()', () => {
     const fn = sizeModule.getMsFromTimeObject
-
-    expect(fn({ value: 10, unit: 's' })).toEqual(10000)
-    expect(fn({ value: 10, unit: 'm' })).toEqual(600000)
-    expect(fn({ value: 10, unit: 'h' })).toEqual(36000000)
-    expect(fn({ value: 10, unit: 'D' })).toEqual(864000000)
-    expect(fn({ value: 10, unit: 'M' })).toEqual(26298000000)
-    expect(fn({ value: 10, unit: 'Y' })).toEqual(315576000000)
-    expect(fn({ value: 10, unit: '?' })).toEqual(null)
-    expect(fn({ value: undefined, unit: 's' })).toEqual(null)
+    expect(fn({ value: 10, unit: 's' })).toBe(10000)
+    expect(fn({ value: 10, unit: 'm' })).toBe(600000)
+    expect(fn({ value: 10, unit: 'h' })).toBe(36000000)
+    expect(fn({ value: 10, unit: 'D' })).toBe(864000000)
+    expect(fn({ value: 10, unit: 'M' })).toBe(26298000000)
+    expect(fn({ value: 10, unit: 'Y' })).toBe(315576000000)
+    expect(fn({ value: 10, unit: '?' })).toBeNull()
+    expect(fn({ value: undefined, unit: 's' })).toBeNull()
   })
 
   test('unfriendlyze()', () => {
-    expect(sizeModule.unfriendlyze('15s')).toEqual(15000)
-    expect(sizeModule.unfriendlyze('10m')).toEqual(600000)
-    expect(sizeModule.unfriendlyze('10M')).toEqual(26298000000)
-    expect(sizeModule.unfriendlyze('10DD')).toEqual(null)
-
+    expect(sizeModule.unfriendlyze('15s')).toBe(15000)
+    expect(sizeModule.unfriendlyze('10m')).toBe(600000)
+    expect(sizeModule.unfriendlyze('10M')).toBe(26298000000)
+    expect(sizeModule.unfriendlyze('10DD')).toBeNull()
     expect(() => sizeModule.unfriendlyze({})).toThrowError(TypeError)
   })
 })
