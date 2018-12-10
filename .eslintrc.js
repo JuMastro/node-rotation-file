@@ -10,6 +10,7 @@ module.exports = {
     jest: true
   },
   globals: {
-    __root: true
+    __root: true,
+    __sandbox: true
   }
 }
