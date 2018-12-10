@@ -1,13 +1,13 @@
-const fs = require('fs')
 const path = require('path')
+const { JestUtils, promised } = require('./jest.utils.js')
+const SANDBOX_PATH = path.resolve(__dirname, './sandbox/')
 
 module.exports = async () => {
-  const SANDBOX_PATH = path.resolve(__dirname, './sandbox/')
-
-  fs.mkdir(SANDBOX_PATH, { recursive: true }, (err) => {
-    if (err) {
-      console.error('Error from jest.setup.js while sandbox directory was created', err)
-      process.exit(0)
-    }
-  })
+  try {
+    await JestUtils.removeDirRecursive(SANDBOX_PATH)
+    await promised.mkdir(SANDBOX_PATH, { recursive: true })
+  } catch (err) {
+    console.error(err)
+    process.exit(0)
+  }
 }

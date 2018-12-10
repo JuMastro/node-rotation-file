@@ -17,7 +17,8 @@ module.exports = {
     }
   },
   globals: {
-    __root: path.resolve(__dirname, '../')
+    __root: path.resolve(__dirname, '../'),
+    __sandbox: path.resolve(__dirname, './sandbox/')
   },
   globalSetup: path.resolve(__dirname, './jest.setup.js'),
   globalTeardown: path.resolve(__dirname, './jest.teardown.js')
