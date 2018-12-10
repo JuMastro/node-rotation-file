@@ -86,9 +86,29 @@ class RotationFileStream extends Writable {
 
   _drain () {}
 
-  _write () {}
+  /**
+   * Method to write a chunk.
+   * @param {Buffer} chunk - Chunk data.
+   * @param {string} encoding - Encoding type.
+   * @param {function} cb - Callback function.
+   * @returns {void}
+   */
+  _write (chunk, encoding, cb) {
+    this.chunks.push({ chunk, cb })
+    this._drain()
+  }
 
-  _writev () {}
+  /**
+   * Method for writing multiple chunks simultaneously
+   * @param {Array} chunks - List of chunks. 
+   * @param {function} cb - Callback function.
+   * @returns {void}
+   */
+  _writev (chunks, cb) {
+    Object.assign(chunks[chunks.length - 1], { cb })
+    this.chunks = this.chunks.concat(chunks)
+    this._drain()
+  }
 
   /**
    * Capture error & run 'end' action.
