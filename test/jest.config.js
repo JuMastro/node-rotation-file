@@ -7,9 +7,7 @@ module.exports = {
   collectCoverage: true,
   coverageDirectory: './coverage',
   coverageReporters: ['json', 'lcov', 'text', 'html'],
-  coveragePathIgnorePatterns: [
-    '/node_modules/'
-  ],
+  coveragePathIgnorePatterns: ['/node_modules/'],
   coverageThreshold: {
     global: {
       branches: 100,
@@ -20,5 +18,7 @@ module.exports = {
   },
   globals: {
     __root: path.resolve(__dirname, '../')
-  }
+  },
+  globalSetup: path.resolve(__dirname, './jest.setup.js'),
+  globalTeardown: path.resolve(__dirname, './jest.teardown.js')
 }
