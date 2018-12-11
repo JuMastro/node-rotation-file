@@ -5,7 +5,7 @@ describe('Test root : RotationFileStream class', () => {
 
   test('Test property validity after constructor triggered', () => {
     const data = {
-      path: './sandbox/logs/request.log',
+      path: path.resolve(__sandbox, './logs/requests.log'),
       time: '10s',
       size: '10o',
       files: 10,
@@ -21,7 +21,7 @@ describe('Test root : RotationFileStream class', () => {
     expect(instance).toHaveProperty('compress', data.compress)
     expect(instance).toHaveProperty('highWaterMark', data.highWaterMark)
     expect(() => rfs()).toThrowError(Error)
-    expect(() => rfs({ path: './logs/example.log', time: '10?' }))
+    expect(() => rfs({ path: path.resolve(__sandbox, './logs/example.log'), time: '10?' }))
       .toThrowError(Error)
   })
 })
