@@ -29,6 +29,8 @@ class RotationFileStream extends Writable {
     this.error = null
     this.writer = null
 
+    this.writing = false
+
     this.once('error', this._error)
 
     this._init(1)
@@ -79,13 +81,14 @@ class RotationFileStream extends Writable {
 
     writer.once('open', (fd) => {
       this.writer = writer
+      setImmediate(this._drain.bind(this))
     })
   }
 
   /**
    * Method to close substream.
    * @param {function} next - Next action.
-   * @returns {void} 
+   * @returns {void}
    */
   _close (next) {
     if (this.writer) {
@@ -97,7 +100,42 @@ class RotationFileStream extends Writable {
     }
   }
 
-  _drain () {}
+  /**
+   * Method to drain pending chunk.
+   * It check process state validity,
+   * next it's send first pending chunk to sub writer stream.
+   * @returns {void}
+   */
+  _drain () {
+    if (!this.writer || this.writing || !this.chunks.length) {
+      return
+    }
+
+    this._consumeChunkEntity(this.chunks.shift())
+  }
+
+  /**
+   * Method to write chunk using sub writer stream.
+   * @param {object} chunkEntity - An object contains 'chunk' and 'callback'.
+   * @returns {void}
+   */
+  _consumeChunkEntity (chunkEntity) {
+    this.size += chunkEntity.chunk.length
+    this.writing = true
+    this.writer.write(chunkEntity.chunk, (err) => {
+      this.writing = false
+
+      if (err) {
+        this.emit('error', err)
+      }
+
+      if (chunkEntity.cb) {
+        chunkEntity.cb()
+      }
+
+      setImmediate(this._drain.bind(this))
+    })
+  }
 
   /**
    * Method to write a chunk.
