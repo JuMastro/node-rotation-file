@@ -82,7 +82,20 @@ class RotationFileStream extends Writable {
     })
   }
 
-  _close () {}
+  /**
+   * Method to close substream.
+   * @param {function} next - Next action.
+   * @returns {void} 
+   */
+  _close (next) {
+    if (this.writer) {
+      this.writer.on('finish', next)
+      this.writer.end()
+      this.writer = null
+    } else {
+      next()
+    }
+  }
 
   _drain () {}
 
@@ -100,7 +113,7 @@ class RotationFileStream extends Writable {
 
   /**
    * Method for writing multiple chunks simultaneously
-   * @param {Array} chunks - List of chunks. 
+   * @param {Array} chunks - List of chunks.
    * @param {function} cb - Callback function.
    * @returns {void}
    */
