@@ -3,6 +3,16 @@ const path = require('path')
 describe('src/common.js', () => {
   const common = require(path.resolve(__root, './src/common.js'))
 
+  test('getFileObject()', () => {
+    const check = (value) => expect(common.getFileObject(value))
+    check('./requests').toEqual({ name: 'requests', ext: '' })
+    check('requests.log').toEqual({ name: 'requests', ext: '.log' })
+    check('./src/logs/requests').toEqual({ name: 'requests', ext: '' })
+    check('./src/logs/requests.log').toEqual({ name: 'requests', ext: '.log' })
+    check('requests.now.log').toEqual({ name: 'requests.now', ext: '.log' })
+    check('./src/logs/requests.now.log').toEqual({ name: 'requests.now', ext: '.log' })
+  })
+
   test('getTagObject()', () => {
     const check = (value) => expect(common.getTagObject(value))
     check('10m').toEqual({ value: 10, unit: 'm' })
@@ -18,20 +28,6 @@ describe('src/common.js', () => {
     check({ value: 10, unit: 'b' }).toBe(100)
     check({ value: 10, unit: '?' }).toBeNull()
     check({ value: undefined, unit: 'a' }).toBeNull()
-  })
-
-  test('getPathObject()', () => {
-    const check = (value) => expect(common.getPathObject(value))
-
-    check('./src/directory/module/file.txt').toEqual({
-      dir: './src/directory/module',
-      file: 'file.txt'
-    })
-
-    check('src/directory/module/file').toEqual({
-      dir: 'src/directory/module',
-      file: 'file'
-    })
   })
 
   test('isArray()', () => {

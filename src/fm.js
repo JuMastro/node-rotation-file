@@ -1,6 +1,6 @@
 const fs = require('fs')
+const path = require('path')
 const { promisify } = require('util')
-const { getPathObject } = require('./common.js')
 
 const promised = {
   close: promisify(fs.close),
@@ -16,7 +16,7 @@ const promised = {
  * @returns {Promise<void>}
  */
 function makeTargetDirectory (target) {
-  return promised.mkdir(getPathObject(target).dir, { recursive: true })
+  return promised.mkdir(path.dirname(target), { recursive: true })
 }
 
 /**

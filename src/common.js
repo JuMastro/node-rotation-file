@@ -1,3 +1,17 @@
+const path = require('path')
+
+/**
+ * Get file object.
+ * @param {string} target - Target path.
+ * @returns {object}
+ */
+function getFileObject (target) {
+  return {
+    name: path.basename(target, path.extname(target)),
+    ext: path.extname(target)
+  }
+}
+
 /**
  * Get an object from a tag.
  * @param {string} tag - Friendly stringify tag.
@@ -23,20 +37,6 @@ function getTagObjectConvertedValue (obj, hashmap) {
   return isValidItem && isDefined(hashmap[obj.unit])
     ? obj.value * hashmap[obj.unit]
     : null
-}
-
-/**
- * Get path object.
- * @param {string} target - Targeted file path.
- * @return {string} File path.
- */
-function getPathObject (target) {
-  const dir = target.split('/')
-
-  return {
-    file: dir.pop(),
-    dir: dir.join('/')
-  }
 }
 
 /**
@@ -105,9 +105,9 @@ function stringMatch (value, regex) {
 }
 
 module.exports = {
+  getFileObject,
   getTagObject,
   getTagObjectConvertedValue,
-  getPathObject,
   isArray,
   isDefined,
   isInteger,

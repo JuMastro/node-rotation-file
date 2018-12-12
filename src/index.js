@@ -46,7 +46,7 @@ class RotationFileStream extends Writable {
    * Method to start 'end' event.
    * It optionaly add a last chunk, next it consume the
    * last pending chunks using '_drain()' method & 'ending' state.
-   * @param {Buffer} chunk - Last chunk data. 
+   * @param {Buffer} chunk - Last chunk data.
    * @param {string} encoding - Encoding type.
    * @param {function} callback - Callback action.
    * @return {RotationFileStream} this
