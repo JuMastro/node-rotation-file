@@ -3,7 +3,7 @@ const time = require(path.resolve(__root, './src/time.js'))
 const size = require(path.resolve(__root, './src/size.js'))
 const { PROCESS_MAP } = require(path.resolve(__root, './src/compressor.js'))
 
-describe('src/common.js', () => {
+describe('src/checker/checks.js', () => {
   const checks = require(path.resolve(__root, './src/checker/checks.js'))
 
   test('path.verify()', () => {

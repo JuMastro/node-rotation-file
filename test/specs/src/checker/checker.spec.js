@@ -1,6 +1,6 @@
 const path = require('path')
 
-describe('src/checker.js', () => {
+describe('src/checker/checker.js', () => {
   const checker = require(path.resolve(__root, './src/checker/checker.js'))
 
   const checks = {
