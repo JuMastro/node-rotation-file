@@ -16,7 +16,7 @@ const promised = {
 async function removeContent (target) {
   const items = await promised.readdir(target)
 
-  for await (const item of items) {
+  for (const item of items) {
     const subtarget = path.resolve(target, item)
     const info = await promised.stat(subtarget)
     info.isFile() ? await promised.unlink(subtarget) : await removeDirRecursive(subtarget)
