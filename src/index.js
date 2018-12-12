@@ -29,15 +29,42 @@ class RotationFileStream extends Writable {
     this.error = null
     this.writer = null
 
+    this.ended = false
+    this.ending = false
     this.writing = false
 
     this.once('error', this._error)
+    this.on('init', this._init)
+    this.on('open', this._open)
+    this.on('close', this._close)
+    this.on('drain', this._drain)
 
-    this._init(1)
+    this.emit('init')
   }
 
-  end () {
-    // TODO: Should implement 'end' action.
+  /**
+   * Method to start 'end' event.
+   * It optionaly add a last chunk, next it consume the
+   * last pending chunks using '_drain()' method & 'ending' state.
+   * @param {Buffer} chunk - Last chunk data. 
+   * @param {string} encoding - Encoding type.
+   * @param {function} callback - Callback action.
+   * @return {RotationFileStream} this
+   */
+  end (chunk, encoding, callback) {
+    this.ending = true
+
+    if (callback) {
+      this.on('finish', callback)
+    }
+
+    if (chunk) {
+      this.chunks.push({ chunk })
+    }
+
+    this.emit('drain')
+
+    return this
   }
 
   /**
@@ -58,7 +85,7 @@ class RotationFileStream extends Writable {
 
       this.birthtime = stat.birthtime
       this.size = stat.size
-      this._open()
+      this.emit('open')
     } catch (err) {
       this.emit('error', new TracableError(err))
     }
@@ -81,7 +108,7 @@ class RotationFileStream extends Writable {
 
     writer.once('open', (fd) => {
       this.writer = writer
-      setImmediate(this._drain.bind(this))
+      this.emit('drain')
     })
   }
 
@@ -107,7 +134,18 @@ class RotationFileStream extends Writable {
    * @returns {void}
    */
   _drain () {
-    if (!this.writer || this.writing || !this.chunks.length) {
+    if (!this.writer || this.writing) {
+      return
+    }
+
+    if (!this.chunks.length) {
+      if (this.ending) {
+        this._close(() => {
+          this.ended = true
+          this.ending = false
+          this.emit('finish')
+        })
+      }
       return
     }
 
@@ -126,14 +164,14 @@ class RotationFileStream extends Writable {
       this.writing = false
 
       if (err) {
-        this.emit('error', err)
+        this.emit('error', new TracableError(err))
       }
 
       if (chunkEntity.cb) {
         chunkEntity.cb()
       }
 
-      setImmediate(this._drain.bind(this))
+      this.emit('drain')
     })
   }
 
@@ -146,7 +184,7 @@ class RotationFileStream extends Writable {
    */
   _write (chunk, encoding, cb) {
     this.chunks.push({ chunk, cb })
-    this._drain()
+    this.emit('drain')
   }
 
   /**
@@ -158,7 +196,7 @@ class RotationFileStream extends Writable {
   _writev (chunks, cb) {
     Object.assign(chunks[chunks.length - 1], { cb })
     this.chunks = this.chunks.concat(chunks)
-    this._drain()
+    this.emit('drain')
   }
 
   /**
