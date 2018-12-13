@@ -7,7 +7,10 @@ module.exports = {
   collectCoverage: true,
   coverageDirectory: './coverage',
   coverageReporters: ['json', 'lcov', 'text', 'html'],
-  coveragePathIgnorePatterns: ['/node_modules/'],
+  coveragePathIgnorePatterns: [
+    '/node_modules/',
+    '/test/jest.*.js'
+  ],
   coverageThreshold: {
     global: {
       branches: 95,

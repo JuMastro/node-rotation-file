@@ -1,7 +1,8 @@
 const path = require('path')
+const { JestPromised } = require(path.resolve(__root, './test/jest.utils.js'))
 
 describe('src/fm.js', () => {
-  const { fm, promised } = require(path.resolve(__root, './src/fm.js'))
+  const fm = require(path.resolve(__root, './src/fm.js'))
 
   test('stat()', async () => {
     // Test should be resolve 'stat'
@@ -25,7 +26,7 @@ describe('src/fm.js', () => {
       await fm.touch(FILE_PATH)
     } catch (err) {
       expect(err).toHaveProperty('code', 'EEXIST')
-      await promised.rm(FILE_PATH)
+      await JestPromised.unlink(FILE_PATH)
     }
   })
 
@@ -35,7 +36,7 @@ describe('src/fm.js', () => {
     const first = await fm.makePath(FILE_PATH)
     expect(first).toBe(0)
 
-    await promised.rm(FILE_PATH)
+    await JestPromised.unlink(FILE_PATH)
 
     const second = await fm.makePath(FILE_PATH)
     expect(second).toBe(1)
