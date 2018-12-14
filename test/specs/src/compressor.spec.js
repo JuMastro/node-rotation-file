@@ -5,7 +5,7 @@ const COMPRESSOR_PATH = path.resolve(__root, './src/compressor.js')
 const SANDBOX_PATH = path.resolve(__sandbox, './compressor')
 const FILE_PATH = path.resolve(SANDBOX_PATH, './compress.log')
 const { compressor, PROCESS_EXT } = require(COMPRESSOR_PATH)
-const INPUT_VALUE = '0'.repeat(7).repeat(1000)
+const INPUT_VALUE = '0'.repeat(998) + '\n'
 
 beforeAll(async () => {
   try {
