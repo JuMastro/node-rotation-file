@@ -6,6 +6,7 @@ const promised = {
   close: promisify(fs.close),
   open: promisify(fs.open),
   mkdir: promisify(fs.mkdir),
+  rename: promisify(fs.rename),
   readdir: promisify(fs.readdir),
   rm: promisify(fs.unlink),
   stat: promisify(fs.stat)

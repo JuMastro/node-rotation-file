@@ -3,6 +3,7 @@ const { Writable } = require('stream')
 const { checkOptions } = require('./options.js')
 const { TracableError } = require('./errors.js')
 const fm = require('./fm.js')
+const rotationProcessor = require('./rotation.js')
 const size = require('./size.js')
 const time = require('./time.js')
 
@@ -32,12 +33,14 @@ class RotationFileStream extends Writable {
     this.ended = false
     this.ending = false
     this.writing = false
+    this.rotating = false
 
     this.once('error', this._error)
     this.on('init', this._init)
     this.on('open', this._open)
     this.on('close', this._close)
     this.on('drain', this._drain)
+    this.on('rotate', this._rotate)
 
     this.emit('init')
   }
@@ -80,7 +83,7 @@ class RotationFileStream extends Writable {
 
       if (!stat && retry) {
         await fm.makePath(this.path)
-        return this._init(--retry)
+        return this.emit('init', --retry)
       }
 
       this.birthtime = stat.birthtime
@@ -91,7 +94,17 @@ class RotationFileStream extends Writable {
     }
   }
 
-  _rotate () {}
+  /**
+   * Method to init rotation process.
+   * The rotation will change the writing file by transforming
+   * the current one into an archive and create a new one to write again.
+   * After this action the writing can be process again, the compression
+   * and the cleaning of the too old archives will be done in parallel if necessary.
+   * @returns {void}
+   */
+  _rotate () {
+    this.emit('close', rotationProcessor.run.bind(this))
+  }
 
   /**
    * Method to create and open a substream that will do the writing to files.
@@ -134,7 +147,7 @@ class RotationFileStream extends Writable {
    * @returns {void}
    */
   _drain () {
-    if (!this.writer || this.writing) {
+    if (!this.writer || this.writing || this.rotating) {
       return
     }
 
@@ -147,6 +160,10 @@ class RotationFileStream extends Writable {
         })
       }
       return
+    }
+
+    if (this.maxSize && this.size >= this.maxSize) {
+      return this.emit('rotate')
     }
 
     this._consumeChunkEntity(this.chunks.shift())
