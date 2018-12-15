@@ -1,13 +1,24 @@
 const path = require('path')
+const namer = require(path.resolve(__root, './src/namer.js'))
 
-describe('src/namer.js', () => {
-  const namer = require(path.resolve(__root, './src/namer.js')).root
-  const { REGEX_DATETIME } = require(path.resolve(__root, './src/history.js'))
-  const SANDBOX_FILE = path.resolve(__sandbox, './namer.log')
+describe('Function getGeneratedName()', () => {
+  const target = './example-dir/example-file.ext'
+  const date = new Date('2018-10-20T20:30:30.555')
 
-  test('getGeneratedName()', () => {
-    const check = (target, birthtime) => expect(namer.getGeneratedName(target, birthtime))
-    const regex = new RegExp(`namer-${REGEX_DATETIME.source}.log`)
-    check(SANDBOX_FILE, new Date()).toMatch(regex)
+  test('throw an Error when "target" parameter is not valid type', () => {
+    expect(() => namer(null, date)).toThrowError()
+    expect(() => namer(undefined, date)).toThrowError()
+    expect(() => namer({ target }, date)).toThrowError()
+  })
+
+  test('throw an Error when "birthtime" parameter is not an instance of Date', () => {
+    expect(() => namer(target, null)).toThrowError(TypeError)
+    expect(() => namer(target, undefined)).toThrowError(TypeError)
+    expect(() => namer(target, '2018-10-20')).toThrowError(TypeError)
+  })
+
+  test('work fine and return valid string as name', () => {
+    expect(namer(target, date))
+      .toBe('./example-dir/example-file-2018_10_20T20_30_30_555.ext')
   })
 })

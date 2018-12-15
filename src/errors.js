@@ -3,17 +3,11 @@
  * @extends Error
  */
 class TracableError extends Error {
-  /**
-   * @param {object|Error} err
-   */
+  /** @param {object|Error} err */
   constructor (err) {
-    if (err instanceof Error) {
-      super(err.message)
-    } else {
-      super()
-      Error.captureStackTrace(this)
-    }
-
+    super(err.message || err)
+    this.name = err.name || 'TracableError'
+    err.stack || Error.captureStackTrace(this)
     Object.assign(this, err)
   }
 }

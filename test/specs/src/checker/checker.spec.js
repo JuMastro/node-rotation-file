@@ -1,26 +1,28 @@
 const path = require('path')
+const checker = require(path.resolve(__root, './src/checker/checker.js'))
 
-describe('src/checker/checker.js', () => {
-  const checker = require(path.resolve(__root, './src/checker/checker.js'))
-
-  const checks = {
-    null: {
-      error: 'Is not null',
-      verify: (value) => value === null
-    },
-    int: {
-      error: 'Is not integer',
-      verify: (value) => Number.isInteger(value)
-    }
+const checks = {
+  null: {
+    error: 'Is not null',
+    verify: (value) => value === null
+  },
+  int: {
+    error: 'Is not integer',
+    verify: (value) => Number.isInteger(value)
   }
+}
 
+describe('Function getCheckList()', () => {
   test('getCheckList()', () => {
-    const { checksList } = require(path.resolve(__root, './src/checker/checks.js'))
-    expect(checker.getChecksList()).toEqual(checksList)
+    const checkList = checker.getChecksList()
+    expect(typeof checkList).toBe('object')
+    expect(Object.keys(checkList).length).toBeGreaterThan(0)
   })
+})
 
-  test('checkProperty()', () => {
-    const res = {
+describe('Function checkProperty()', () => {
+  const getResponse = () => {
+    return {
       errors: [],
       addError: function (key, message) {
         this.errors.push({ key, message })
@@ -32,10 +34,10 @@ describe('src/checker/checker.js', () => {
         return this.errors
       }
     }
+  }
 
-    checker.checkProperty({ null: null }, checks, 'null', res)
-    expect(res.hasErrors()).toEqual(false)
-
+  test('work fine and return an Error object when check is not valid', () => {
+    const res = getResponse()
     checker.checkProperty({ test: 'hello' }, checks, 'int', res)
     expect(res.getErrors()).toEqual([{
       key: 'int',
@@ -43,16 +45,15 @@ describe('src/checker/checker.js', () => {
     }])
   })
 
-  test('validify()', () => {
-    const valid = { null: null, int: 10 }
-    expect(checker.validify(valid, checks).hasErrors()).toEqual(false)
+  test('work fine and return false when has not error(s)', () => {
+    const res = getResponse()
+    checker.checkProperty({ null: null }, checks, 'null', res)
+    expect(res.hasErrors()).toEqual(false)
+  })
+})
 
-    const checkError = checker.validify({ null: true, int: 'str' }, checks)
-    expect(checkError.getErrors()).toEqual([
-      { key: 'null', message: 'Is not null' },
-      { key: 'int', message: 'Is not integer' }
-    ])
-
+describe('Function validify()', () => {
+  test('work fine and return error Array when parameter is not expected', () => {
     const checkInvalidProp = checker.validify({ invalid: '' }, checks)
     expect(checkInvalidProp.getErrors()).toEqual([{
       key: 'invalid',
@@ -60,9 +61,22 @@ describe('src/checker/checker.js', () => {
     }])
   })
 
-  test('makeSet()', () => {
-    const { checks, makeSet } = require(path.resolve(__root, './src/checker/checks.js'))
-    expect(makeSet({ files: null })).toEqual({ files: checks.files })
-    expect(() => makeSet({ file: null })).toThrowError(Error)
+  test('work fine and return errors Array when checks do not pass', () => {
+    const checkError = checker.validify({ null: true, int: 'str' }, checks)
+    expect(checkError.getErrors()).toEqual([
+      { key: 'null', message: 'Is not null' },
+      { key: 'int', message: 'Is not integer' }
+    ])
+  })
+
+  test('work fine and return false when not had error(s)', () => {
+    expect(checker.validify({ null: null, int: 10 }, checks).hasErrors()).toEqual(false)
   })
 })
+
+//   test('makeSet()', () => {
+//     const { checks, makeSet } = require(path.resolve(__root, './src/checker/checks.js'))
+//     expect(makeSet({ files: null })).toEqual({ files: checks.files })
+//     expect(() => makeSet({ file: null })).toThrowError(Error)
+//   })
+// })

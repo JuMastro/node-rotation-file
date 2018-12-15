@@ -4,18 +4,16 @@ const common = require('./common.js')
  * Size units hashmap.
  * The value unit is bit.
  *
- * b -> bit(s)
  * o -> octet(s)
  * k -> kilooctet(s)
  * m -> megaoctet(s)
  * g -> gigaoctet(s)
  */
 const unitsHashmap = {
-  'b': 1,
-  'o': 8,
-  'k': 8192,
-  'm': 8388608,
-  'g': 8589934592
+  'o': 1,
+  'k': 1024,
+  'm': 1048576,
+  'g': 1073741824
 }
 
 /**

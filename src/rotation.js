@@ -1,3 +1,4 @@
+const EventEmitter = require('events')
 const { TracableError } = require('./errors.js')
 const compressor = require('./compressor.js')
 const { fm, promised } = require('./fm.js')
@@ -11,10 +12,10 @@ const namer = require('./namer.js')
  * @throws {Error}
  */
 async function run () {
-  if (this.constructor.name !== 'RotationFileStream') {
-    return Promise.reject(new Error(
-      'The context of function, should be binding from an RotationFileStream instance.'
-    ))
+  if (!(this instanceof EventEmitter)) {
+    throw new Error(
+      'The context of function, should be binding from an EventEmitter instance.'
+    )
   }
 
   try {
@@ -26,12 +27,14 @@ async function run () {
     this.rotating = false
 
     if (this.compress) {
-      await compressor.call(this, generatedPath, this.compress)
+      compressor.call(this, generatedPath, this.compress)
       removeQueue.push(generatedPath)
     }
 
     const oldiers = await history.getOldiers(this.path, this.compress, this.maxFiles)
+
     removeQueue.concat(oldiers).forEach((file) => promised.rm(file))
+
     this.emit('init')
   } catch (err) {
     this.rotating = false

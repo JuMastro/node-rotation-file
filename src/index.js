@@ -26,7 +26,7 @@ class RotationFileStream extends Writable {
 
     this.chunks = []
     this.size = null
-    this.birthime = null
+    this.birthtime = null
     this.error = null
     this.writer = null
 
@@ -81,8 +81,13 @@ class RotationFileStream extends Writable {
     try {
       const stat = await fm.stat(this.path)
 
-      if (!stat && retry) {
-        await fm.makePath(this.path)
+      if (!stat) {
+        if (!retry) {
+          throw new Error('Impossible to init the stream process... Check perms and path.')
+        }
+
+        await fm.makePath(this.path, 'a')
+
         return this.emit('init', --retry)
       }
 
@@ -153,7 +158,7 @@ class RotationFileStream extends Writable {
 
     if (!this.chunks.length) {
       if (this.ending) {
-        this._close(() => {
+        this.emit('close', () => {
           this.ended = true
           this.ending = false
           this.emit('finish')
@@ -201,7 +206,7 @@ class RotationFileStream extends Writable {
    */
   _write (chunk, encoding, cb) {
     this.chunks.push({ chunk, cb })
-    this.emit('drain')
+    this._drain()
   }
 
   /**
@@ -213,7 +218,7 @@ class RotationFileStream extends Writable {
   _writev (chunks, cb) {
     Object.assign(chunks[chunks.length - 1], { cb })
     this.chunks = this.chunks.concat(chunks)
-    this.emit('drain')
+    this._drain()
   }
 
   /**
@@ -226,4 +231,8 @@ class RotationFileStream extends Writable {
   }
 }
 
-module.exports = (options) => new RotationFileStream(options)
+const rfs = (options) => new RotationFileStream(options)
+
+module.exports = rfs
+module.exports.rfs = rfs
+module.exports.RotationFileStream = RotationFileStream

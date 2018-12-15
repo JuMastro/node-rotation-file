@@ -11,6 +11,7 @@ module.exports = {
   },
   globals: {
     __root: true,
-    __sandbox: true
+    __sandbox: true,
+    __utils: true
   }
 }

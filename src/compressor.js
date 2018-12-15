@@ -1,5 +1,6 @@
 const fs = require('fs')
 const zlib = require('zlib')
+const EventEmitter = require('events')
 const { TracableError } = require('./errors.js')
 
 const PROCESS_GZIP = 'gzip'
@@ -21,30 +22,36 @@ function outputBuilder (target, processType) {
  * @param {string} target - Target path.
  * @param {string} processType - Action type.
  * @return {void}
- * @throws {TracableError}
+ * @throws {Error}
  */
 function compressor (target, processType) {
-  if (this.constructor.name !== 'RotationFileStream') {
+  if (!(this instanceof EventEmitter)) {
     throw new Error(
-      'The context of function, should be binding from an RotationFileStream instance.'
+      'The context of function, should be binding from an EventEmitter instance.'
     )
   }
 
   const error = (err) => this.emit('error', new TracableError(err))
 
-  if (typeof PROCESS_MAP[processType] === 'undefined') {
-    return error({ message: 'Invalid "processType" provided.' })
+  try {
+    if (typeof PROCESS_MAP[processType] === 'undefined') {
+      return error({
+        message: `Invalid "processType" provided, "${processType}" is not found!`
+      })
+    }
+
+    const reader = fs.createReadStream(target)
+    const zipper = PROCESS_MAP[processType]()
+    const writer = fs.createWriteStream(outputBuilder(target, processType))
+
+    reader.once('error', error)
+    writer.once('error', error)
+    zipper.once('error', error)
+
+    reader.pipe(zipper).pipe(writer)
+  } catch (err) {
+    error(err)
   }
-
-  const reader = fs.createReadStream(target)
-  const zipper = PROCESS_MAP[processType]()
-  const writer = fs.createWriteStream(outputBuilder(target, processType))
-
-  reader.once('error', error)
-  writer.once('error', error)
-  zipper.once('error', error)
-
-  reader.pipe(zipper).pipe(writer)
 }
 
 module.exports = compressor

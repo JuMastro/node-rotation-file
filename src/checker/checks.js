@@ -4,7 +4,7 @@ const compressList = ['gzip']
 
 const REGEX_VALIDITY_PATH = /^[.]?[a-zA-z0-9-_/]*[.]?[a-zA-Z]*$/
 const REGEX_VALIDITY_TIME = /^[0-9]+s|m|h|D|M|Y$/
-const REGEX_VALIDITY_SIZE = /^[0-9]+b|o|k|m|g$/
+const REGEX_VALIDITY_SIZE = /^[0-9]+o|k|m|g$/
 
 const checks = {}
 

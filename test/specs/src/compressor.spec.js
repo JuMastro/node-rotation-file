@@ -1,12 +1,16 @@
 const path = require('path')
+const EventEmitter = require('events')
 const { JestPromised } = require(path.resolve(__root, './test/jest.utils.js'))
-
 const COMPRESSOR_PATH = path.resolve(__root, './src/compressor.js')
-const SANDBOX_PATH = path.resolve(__sandbox, './compressor')
+const SANDBOX_PATH = path.resolve(__sandbox, './compressor/')
 const FILE_PATH = path.resolve(SANDBOX_PATH, './compress.log')
-const { compressor, PROCESS_EXT } = require(COMPRESSOR_PATH)
-const INPUT_VALUE = '0'.repeat(998) + '\n'
+const compressor = require(COMPRESSOR_PATH)
+const INPUT_VALUE = '0'.repeat(98) + '\n'
 
+class RotationFileStream extends EventEmitter {}
+const rotationFileStream = new RotationFileStream()
+
+// Make sandbox directory & file
 beforeAll(async () => {
   try {
     await JestPromised.mkdir(SANDBOX_PATH, { recursive: true })
@@ -16,40 +20,44 @@ beforeAll(async () => {
   }
 })
 
-afterAll(async () => {
-  try {
-    await JestPromised.unlink(FILE_PATH)
-    for (const type in PROCESS_EXT) {
-      JestPromised.unlink(FILE_PATH + PROCESS_EXT[type])
-    }
-  } catch (err) {
-    throw err
-  }
-})
-
-describe('src/compressor.js', () => {
-  const rfs = require(path.resolve(__root, './src/index.js'))
-  const rfsInstance = rfs({ path: FILE_PATH })
-
-  // Compressor should use RotationFileStream instance binding.
-  const compressorTest = compressor.bind(rfsInstance)
-
-  test('Test compressor() work fine', async () => {
-    for (const type in PROCESS_EXT) {
-      compressorTest(FILE_PATH, type)
-      const stat = await JestPromised.stat(FILE_PATH + PROCESS_EXT[type])
-      expect(stat.isFile()).toBe(true)
-    }
-  })
-
-  test('Test compressor() without parent binding throw an Error', async () => {
+describe('Function compressor()', () => {
+  test('throw an Error when the context of function is not binded from parent EventEmitter', () => {
     expect(() => compressor(FILE_PATH, 'gzip')).toThrowError(Error)
   })
 
-  test('Test compressor() with invalid "processType" emit Error', () => {
-    rfsInstance.on('error', (err) => {
-      expect(err).toHaveProperty('message', 'Invalid "processType" provided.')
+  test('should binded emitter emit an Error when "path" parameter has not a valid type', () => {
+    rotationFileStream.once('error', (err) => {
+      expect(err).toHaveProperty(
+        'message',
+        'The "path" argument must be one of type string, Buffer, or URL. Received type object'
+      )
     })
-    compressorTest(FILE_PATH, 'INVALID_TYPE')
+
+    compressor.call(rotationFileStream, ['INVALID_PATH'], 'gzip')
+  })
+
+  test('should binded emitter emit an Error when "processType" parameter is not found', () => {
+    rotationFileStream.once('error', (err) => {
+      expect(err).toHaveProperty(
+        'message',
+        'Invalid "processType" provided, "INVALID_TYPE" is not found!'
+      )
+    })
+
+    compressor.call(rotationFileStream, FILE_PATH, 'INVALID_TYPE')
+  })
+
+  test('work fine when trying to compress using "gzip" type', async () => {
+    const directory = path.dirname(FILE_PATH)
+    const initials = await JestPromised.readdir(directory)
+    await compressor.call(rotationFileStream, FILE_PATH, 'gzip')
+    const news = await JestPromised.readdir(directory)
+    const differences = news.filter((item) => !initials.includes(item))
+    expect(differences.length).toBeGreaterThan(0)
+
+    const gzipped = path.resolve(directory, differences.shift())
+    const gzippedStat = await JestPromised.stat(gzipped)
+    const initialStat = await JestPromised.stat(FILE_PATH)
+    expect(gzippedStat.size).toBeLessThan(initialStat.size)
   })
 })
