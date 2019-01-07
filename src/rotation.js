@@ -27,8 +27,10 @@ async function run () {
     this.rotating = false
 
     if (this.compress) {
-      compressor.call(this, generatedPath, this.compress)
-      removeQueue.push(generatedPath)
+      setImmediate(() => {
+        compressor.call(this, generatedPath, this.compress)
+        removeQueue.push(generatedPath)
+      })
     }
 
     const oldiers = await history.getOldiers(this.path, this.compress, this.maxFiles)

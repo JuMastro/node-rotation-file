@@ -93,6 +93,21 @@ describe('RotationFileStream _init()', () => {
       .then((res) => expect(res).toBeInstanceOf(EventEmitter))
       .catch((err) => expect(err).toBe('This test should not throw an Error...'))
   })
+
+  test('work fine when "maxTime" argument is null', async () => {
+    const _initTest = new Promise((resolve, reject) => {
+      const FILE_PATH = path.resolve(DIR_PATH, './test-a.log')
+      const opts = Object.assign({}, options, { path: FILE_PATH, time: null })
+      console.log(opts)
+      const stream = rfs(opts)
+      stream.once('error', (err) => reject(err))
+      stream.once('open', () => resolve(stream))
+    })
+
+    await _initTest
+      .then((res) => expect(res).toBeInstanceOf(EventEmitter))
+      .catch((err) => expect(err).toBe('This test should not throw an Error...'))
+  })
 })
 
 describe('RotationFileStream write()', () => {

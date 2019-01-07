@@ -4,6 +4,7 @@ const { checkOptions } = require('./options.js')
 const { TracableError } = require('./errors.js')
 const fm = require('./fm.js')
 const rotationProcessor = require('./rotation.js')
+const interval = require('./interval.js')
 const size = require('./size.js')
 const time = require('./time.js')
 
@@ -91,8 +92,15 @@ class RotationFileStream extends Writable {
         return this.emit('init', --retry)
       }
 
-      this.birthtime = stat.birthtime
+      if (this.maxTime) {
+        setImmediate(() => {
+          interval.initTimeRotation.call(this)
+        })
+      }
+
       this.size = stat.size
+      this.birthtime = stat.birthtime
+
       this.emit('open')
     } catch (err) {
       this.emit('error', new TracableError(err))

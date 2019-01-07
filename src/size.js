@@ -29,10 +29,13 @@ function getBitsFromSizeObject (sizeObject) {
  * Get bit from sizetag.
  * First step, the sizetag is converted as sizeObject.
  * Next, it's checked & converted to bits.
- * @param {string} sizetag - Friendly stringify size interval.
+ * @param {string} [sizetag=null] - Friendly stringify size interval.
  * @returns {number} sizetag in bits.
  */
-function unfriendlyze (sizetag) {
+function unfriendlyze (sizetag = null) {
+  if (!sizetag) {
+    return null
+  }
   return getBitsFromSizeObject(common.getTagObject(sizetag))
 }
 

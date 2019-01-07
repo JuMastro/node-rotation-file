@@ -33,10 +33,13 @@ function getMsFromTimeObject (timeObject) {
  * Get milliseconds from timetag.
  * First step, the timetag is converted as timeObject.
  * Next, it's checked & converted to milliseconds.
- * @param {string} timetag - Friendly stringify time interval.
+ * @param {string} [timetag=null] - Friendly stringify time interval.
  * @returns {number} timetag in milliseconds.
  */
-function unfriendlyze (timetag) {
+function unfriendlyze (timetag = null) {
+  if (!timetag) {
+    return null
+  }
   return getMsFromTimeObject(common.getTagObject(timetag))
 }
 

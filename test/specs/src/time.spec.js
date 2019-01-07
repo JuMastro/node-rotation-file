@@ -36,10 +36,16 @@ describe('Function getMsFromTimeObject()', () => {
 })
 
 describe('Function unfriendlyze()', () => {
-  test('throw an Error when the "sizetag" parameter is not type string', () => {
+  test('throw an Error when the "sizetag" parameter is not valid type', () => {
     expect(() => time.unfriendlyze(10)).toThrowError(TypeError)
-    expect(() => time.unfriendlyze(undefined)).toThrowError(TypeError)
+    expect(() => time.unfriendlyze([undefined])).toThrowError(TypeError)
     expect(() => time.unfriendlyze({ sizetag: '5m' })).toThrowError(TypeError)
+  })
+
+  test('work fine and return null when the "sizetag" parameter is falsy', () => {
+    expect(time.unfriendlyze(null)).toBe(null)
+    expect(time.unfriendlyze(false)).toBe(null)
+    expect(time.unfriendlyze(undefined)).toBe(null)
   })
 
   test('work fine and return null when the "sizetag" has bad unit', () => {

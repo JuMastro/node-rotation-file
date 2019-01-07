@@ -34,10 +34,16 @@ describe('Function getBitsFromSizeObject()', () => {
 })
 
 describe('Function unfriendlyze()', () => {
-  test('throw an Error when the "sizetag" parameter is not type string', () => {
+  test('throw an Error when the "sizetag" parameter is not valid type', () => {
     expect(() => size.unfriendlyze(10)).toThrowError(TypeError)
-    expect(() => size.unfriendlyze(undefined)).toThrowError(TypeError)
+    expect(() => size.unfriendlyze([undefined])).toThrowError(TypeError)
     expect(() => size.unfriendlyze({ sizetag: '15M' })).toThrowError(TypeError)
+  })
+
+  test('work fine and return null when the "sizetag" parameter is falsy', () => {
+    expect(size.unfriendlyze(null)).toBe(null)
+    expect(size.unfriendlyze(false)).toBe(null)
+    expect(size.unfriendlyze(undefined)).toBe(null)
   })
 
   test('work fine and return null when the "sizetag" has bad unit', () => {
