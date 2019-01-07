@@ -4,12 +4,11 @@ module.exports = {
   notify: true,
   verbose: true,
   rootDir: '../',
+  testMatch: ['**/*.spec.js'],
   collectCoverage: true,
   coverageDirectory: './coverage',
   coverageReporters: ['json', 'lcov', 'text', 'html'],
-  coveragePathIgnorePatterns: [
-    '/node_modules/'
-  ],
+  coveragePathIgnorePatterns: ['/node_modules/', '/test/jest.*.js'],
   coverageThreshold: {
     global: {
       branches: 100,
@@ -19,6 +18,10 @@ module.exports = {
     }
   },
   globals: {
-    __root: path.resolve(__dirname, '../')
-  }
+    __root: path.resolve(__dirname, '../'),
+    __sandbox: path.resolve(__dirname, './sandbox/'),
+    __utils: path.resolve(__dirname, './jest.utils.js')
+  },
+  globalSetup: path.resolve(__dirname, './jest.setup.js'),
+  globalTeardown: path.resolve(__dirname, './jest.teardown.js')
 }
