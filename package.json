@@ -1,6 +1,6 @@
 {
   "name": "node-rotation-file",
-  "version": "0.0.1",
+  "version": "1.0.0-alpha",
   "description": "Make a rotation file by time or size",
   "main": "lib/index.js",
   "author": "JuMastro <mastromonaco.julien@gmail.com>",
