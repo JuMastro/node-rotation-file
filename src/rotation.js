@@ -26,16 +26,16 @@ async function run () {
     await fm.makePath(this.path)
     this.rotating = false
 
-    if (this.compress) {
-      setImmediate(() => {
-        compressor.call(this, generatedPath, this.compress)
+    setImmediate(async () => {
+      if (this.compress) {
+        await compressor.call(this, generatedPath, this.compress)
         removeQueue.push(generatedPath)
-      })
-    }
+      }
 
-    const oldiers = await history.getOldiers(this.path, this.compress, this.maxFiles)
+      const oldiers = await history.getOldiers(this.path, this.compress, this.maxFiles)
 
-    removeQueue.concat(oldiers).forEach((file) => promised.rm(file))
+      removeQueue.concat(oldiers).forEach((file) => promised.rm(file))
+    })
 
     this.emit('init')
   } catch (err) {

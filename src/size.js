@@ -17,16 +17,16 @@ const unitsHashmap = {
 }
 
 /**
- * Get bits from a size object.
+ * Get octects from a size object.
  * @param {object} sizeObject - Size object.
  * @returns {null|number} sizeObject in bits.
  */
-function getBitsFromSizeObject (sizeObject) {
+function getOctectsFromSizeObject (sizeObject) {
   return common.getTagObjectConvertedValue(sizeObject, unitsHashmap)
 }
 
 /**
- * Get bit from sizetag.
+ * Get octect from sizetag.
  * First step, the sizetag is converted as sizeObject.
  * Next, it's checked & converted to bits.
  * @param {string} [sizetag=null] - Friendly stringify size interval.
@@ -36,11 +36,11 @@ function unfriendlyze (sizetag = null) {
   if (!sizetag) {
     return null
   }
-  return getBitsFromSizeObject(common.getTagObject(sizetag))
+  return getOctectsFromSizeObject(common.getTagObject(sizetag))
 }
 
 module.exports = {
-  getBitsFromSizeObject,
+  getOctectsFromSizeObject,
   unfriendlyze,
   unitsHashmap
 }
