@@ -1,6 +1,6 @@
 {
   "name": "node-rotation-file",
-  "version": "1.0.0-alpha",
+  "version": "1.0.0-beta",
   "description": "Make a rotation file by time or size",
   "main": "lib/index.js",
   "author": "JuMastro <mastromonaco.julien@gmail.com>",
@@ -19,7 +19,7 @@
     "test": "jest --config ./test/jest.config.js"
   },
   "engines": {
-    "node": ">= 8.0.0",
+    "node": ">= 10.0.0",
     "npm": ">= 6.0.0"
   },
   "devDependencies": {

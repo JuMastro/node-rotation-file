@@ -21,7 +21,7 @@ function outputBuilder (target, processType) {
  * To make different comprenssion process depend on 'processType'.
  * @param {string} target - Target path.
  * @param {string} processType - Action type.
- * @return {void}
+ * @return {Promise}
  * @throws {Error}
  */
 function compressor (target, processType) {
@@ -31,27 +31,30 @@ function compressor (target, processType) {
     )
   }
 
-  const error = (err) => this.emit('error', new TracableError(err))
+  return new Promise((resolve) => {
+    const error = (err) => this.emit('error', new TracableError(err))
 
-  try {
-    if (typeof PROCESS_MAP[processType] === 'undefined') {
-      return error({
-        message: `Invalid "processType" provided, "${processType}" is not found!`
-      })
+    try {
+      if (typeof PROCESS_MAP[processType] === 'undefined') {
+        return error({
+          message: `Invalid "processType" provided, "${processType}" is not found!`
+        })
+      }
+
+      const reader = fs.createReadStream(target)
+      const zipper = PROCESS_MAP[processType]()
+      const writer = fs.createWriteStream(outputBuilder(target, processType))
+
+      writer.on('finish', resolve)
+      reader.once('error', error)
+      writer.once('error', error)
+      zipper.once('error', error)
+
+      reader.pipe(zipper).pipe(writer)
+    } catch (err) {
+      error(err)
     }
-
-    const reader = fs.createReadStream(target)
-    const zipper = PROCESS_MAP[processType]()
-    const writer = fs.createWriteStream(outputBuilder(target, processType))
-
-    reader.once('error', error)
-    writer.once('error', error)
-    zipper.once('error', error)
-
-    reader.pipe(zipper).pipe(writer)
-  } catch (err) {
-    error(err)
-  }
+  })
 }
 
 module.exports = compressor
