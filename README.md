@@ -1,4 +1,4 @@
-<h1 align="center"><p>node-rotation-file</p></h1>
+<h1 align="center">node-rotation-file</h1>
 <p align="center">📄 Make rotation file with time or size.</p>
 <p align="center">
   <a alt="Npm version" href="https://www.npmjs.com/package/node-rotation-file">
@@ -6,6 +6,9 @@
   </a>
   <a alt="Build Status" href="https://travis-ci.com/JuMastro/node-rotation-file">
     <img src="https://travis-ci.com/JuMastro/node-rotation-file.svg?branch=master" />
+  </a>
+  <a alt="Node requierement version" href="https://github.com/JuMastro/node-rotation-file/blob/master/package.json">
+    <img src="https://img.shields.io/node/v/node-rotation-file.svg?longCache=true">
   </a>
   <a alt="Dependencies" href="https://github.com/JuMastro/node-rotation-file/blob/master/package.json">
     <img src="https://img.shields.io/david/JuMastro/node-rotation-file.svg" />
