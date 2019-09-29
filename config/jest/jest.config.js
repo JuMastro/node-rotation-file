@@ -3,12 +3,18 @@ const path = require('path')
 module.exports = {
   notify: true,
   verbose: true,
-  rootDir: '../',
-  testMatch: ['**/*.spec.js'],
-  collectCoverage: true,
+  rootDir: '../../',
+  testMatch: [
+    '<rootDir>/test/**/*.spec.js'
+  ],
+  collectCoverageFrom: [
+    '<rootDir>/src/**/*.js'
+  ],
   coverageDirectory: './coverage',
-  coverageReporters: ['json', 'lcov', 'text', 'html'],
-  coveragePathIgnorePatterns: ['/node_modules/', '/test/jest.*.js'],
+  coveragePathIgnorePatterns: [
+    '<rootDir>/node_modules/'
+  ],
+  coverageReporters: ['json', 'html', 'text', 'lcov'],
   coverageThreshold: {
     global: {
       branches: 100,
@@ -18,9 +24,8 @@ module.exports = {
     }
   },
   globals: {
-    __root: path.resolve(__dirname, '../'),
-    __sandbox: path.resolve(__dirname, './sandbox/'),
-    __utils: path.resolve(__dirname, './jest.utils.js')
+    __root: path.resolve(__dirname, '../../'),
+    __tmp: path.resolve(__dirname, '../../test/__tmp__')
   },
   globalSetup: path.resolve(__dirname, './jest.setup.js'),
   globalTeardown: path.resolve(__dirname, './jest.teardown.js')

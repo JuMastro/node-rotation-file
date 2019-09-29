@@ -3,7 +3,8 @@ module.exports = {
   extends: 'standard',
   plugins: [
     'standard',
-    'promise'
+    'promise',
+    'jest'
   ],
   env: {
     node: true,
@@ -11,7 +12,6 @@ module.exports = {
   },
   globals: {
     __root: true,
-    __sandbox: true,
-    __utils: true
+    __tmp: true
   }
 }
