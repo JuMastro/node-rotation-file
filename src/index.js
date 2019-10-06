@@ -6,13 +6,13 @@ const { makeStreamRotation } = require('./rotation.js')
 
 /**
  * The RotationFileStream constructor options object.
- * @typedef {object} RotationFileStream:Options
+ * @typedef {object} RotationFileStream~Options
  * @prop {string} path - The file path location.
- * @prop {number|string|null} [maxSize='10m'] - The size as number value or string tag.
- * @prop {number|string|null} [maxTime='1D'] - The time as number value or string tag.
- * @prop {number|null} [maxArchives=14] - The number of file to keep in history.
- * @prop {string|null} [archivesDirectory=dirname(path)] - The directory location where archives are stored.
- * @prop {string|null} [compressType='gzip'] - The type of compression.
+ * @prop {null|number|string} [maxSize='10m'] - The size as integer number, string tag or null.
+ * @prop {null|number|string} [maxTime='1D'] - The time as integer number, string tag or null.
+ * @prop {null|number} [maxArchives=14] - The number of file to keep in history.
+ * @prop {null|string} [archivesDirectory=dirname(path)] - The directory location where archives are stored.
+ * @prop {null|string} [compressType='gzip'] - The type of compression.
  */
 
 module.exports = class RotationFileStream extends Writable {
