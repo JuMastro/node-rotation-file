@@ -9,8 +9,7 @@ const DEFAULT_OPTIONS = {
   maxTime: '1D',
   maxArchives: 10,
   archivesDirectory: null,
-  compressType: 'gzip',
-  highWaterMark: 16384
+  compressType: 'gzip'
 }
 
 /**
@@ -26,7 +25,6 @@ function ensureOptions (options) {
   ensureMaxArchives(opts)
   ensureArchivesDirectory(opts)
   ensureCompressType(opts)
-  ensureHighWaterMark(opts)
 
   return opts
 }
@@ -119,17 +117,6 @@ function ensureCompressType (options) {
   }
 }
 
-/**
- * @param {RotationFileStream:Options} options
- * @returns {void}
- * @throws {Error}
- */
-function ensureHighWaterMark (options) {
-  if (options.highWaterMark <= 0 || !Number.isInteger(options.highWaterMark)) {
-    throw new Error('The "highWaterMark" argument must be a positive integer number.')
-  }
-}
-
 module.exports = {
   DEFAULT_OPTIONS,
   ensureOptions,
@@ -138,6 +125,5 @@ module.exports = {
   ensureMaxTime,
   ensureMaxArchives,
   ensureArchivesDirectory,
-  ensureCompressType,
-  ensureHighWaterMark
+  ensureCompressType
 }

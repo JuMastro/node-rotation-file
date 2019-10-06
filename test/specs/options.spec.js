@@ -115,15 +115,3 @@ describe('ensureCompressType()', () => {
     expect(() => options.ensureCompressType({ compressType: 'gzip' })).not.toThrow()
   })
 })
-
-describe('ensureHighWaterMark()', () => {
-  test('throw an Error when the argument is not positive integer', () => {
-    expect(() => options.ensureHighWaterMark({ maxArchives: 10.4242 })).toThrowError()
-    expect(() => options.ensureHighWaterMark({ maxArchives: -10 })).toThrowError()
-    expect(() => options.ensureHighWaterMark({ maxArchives: 'invalid_tag' })).toThrowError()
-  })
-
-  test('work fine when the argument is positive integer', () => {
-    expect(() => options.ensureHighWaterMark({ highWaterMark: 16382 })).not.toThrow()
-  })
-})
