@@ -21,11 +21,11 @@
   </a>
 </p>
 
-## Getting Started
+## Installation
 
 Install with [`npm`](https://www.npmjs.com/):
 ```
-npm i --save node-rotation-file
+$ npm i --save node-rotation-file
 ```
 The minimum version of Node to use `node-rotation-file` is `v10.0.0`.
 
@@ -34,45 +34,109 @@ The minimum version of Node to use `node-rotation-file` is `v10.0.0`.
 To read more information about node writable stream read : [documentation](https://nodejs.org/api/stream.html#stream_writable_streams).
 
 ```javascript
-const nrf = require('node-rotation-file')
+const RotationFileStream = require('node-rotation-file')
 
-const stream = nrf({
+const stream = new RotationFileStream({
   path: './logs/output.log',
-  time: '1D',
-  size: '10m',
-  files: 14,
-  compress: 'gzip'
+  maxTime: '1D',
+  maxSize: '10m',
+  maxArchives: 14,
+  archivesDirectory: './logs/archives',
+  compressType: 'gzip'
 })
 
-for (let i = 0; i < 100000; ++i) {
-  stream.write('Helloworld!')
+for (let i = 0; i < 1e5; ++i) {
+  stream.write('Helloworld!\n')
 }
 
 stream.end('Last line...')
 ```
 
-You can trigger a rotation from outside using event `rotate`.
+## Options
 
-```javascript
-stream.emit('rotate')
-```
+- ### path
+    - **Type:** string
 
-## Options 
+    - **Default:**
 
-- `path [string]` the file location (default=null).
-- `size [string|null]` the size tag to seed time limit (default='10m').
-- `time [string|null]` the time tag to seed size limit (default='1D').
-- `files [string|null]` the number of stored archives (default=14).
-- `compress [string|null]` the compression type for archives, no compression triggered if null (default='gzip').
-- `highWaterMark [number]` the limit to store before sending false as response for writing (default=16384).
+    The file path location.
 
-## Listenable events
-- `rfs.error` (once): When en error is triggered.
-- `rfs.init` : When a stream is init, the filepath is created, and it's prepare the runnable state. 
-- `rfs.open`: When the subwriter stream is openning.
-- `rfs.close`: When the stream is closed.
-- `rfs.drain`: When the stream can write again.
-- `rfs.rotate`: When stream is rotating.
+- ### maxSize
+    - **Type:** null | number | string
+
+    - **Default:** "10m"
+
+    The size as integer number, string tag or null.
+
+- ### maxTime
+    - **Type:** null | number | string
+
+    - **Default:** "1D"
+
+    The size as integer number, string tag or null.
+
+- ### maxArchives
+    - **Type:** null | number
+
+    - **Default:** 14
+
+    The number of file to keep in history.
+
+- ### archivesDirectory
+    - **Type:** string
+
+    - **Default:** dirname(path)
+
+    The directory location where archives are stored.
+
+- ### compressType
+    - **Type:** string
+
+    - **Default:** "gzip"
+
+    The compression type.
+
+## Events
+
+- ### init (once)
+    - **Emittable:** false
+
+    An event emitted once at stream initialization.
+
+- ### error (once)
+    - **Emittable:** true
+
+    An event emitted once when an error is encountered/throwed. It's can be used to throw an error and ending the stream.
+
+- ### rotate
+    - **Emittable:** true
+
+    An event emitted when stream will start a rotation. It's can be used to start a rotation.
+
+- ### open
+    - **Emittable:** false
+
+    An event emitted when the stream start to openning a writing sub-stream.
+
+- ### ready
+    - **Emittable:** false
+
+    An event emitted when the stream is ready to write.
+
+- ### close
+    - **Emittable:** false
+
+    An event emitted when the stream start to closing the writing sub-stream.
+
+- ### drain
+    - **Emittable:** false
+
+    An event emitted when the stream is ready to write again.
+
+- ### finish
+    - **Emittable:** false
+
+    An event emitted after the stream closing fine.
 
 ## Dev dependencies
 

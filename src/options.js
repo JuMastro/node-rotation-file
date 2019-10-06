@@ -1,53 +1,143 @@
-const checker = require('./checker/checker.js')
-const common = require('./common.js')
+const path = require('path')
+const { COMPRESSION_TYPES } = require('./compresser.js')
+const { SIZE_UNITS, TIME_UNITS } = require('./units.js')
+const utils = require('./utils.js')
 
-const checksList = checker.getChecksList()
-const checksDefaultOptions = checksList.checksDefaultOptions
-
-/**
- * Make default options.
- * @param {object} options - Default options.
- * @returns {object} Builded options.
- * @throws {TypeError|TracableError}
- */
-function checkOptions (options) {
-  const reference = getDefaultOptions()
-
-  if (common.isString(options)) {
-    options = Object.assign(reference, { path: options })
-  } else if (common.isRealObject(options)) {
-    options = Object.assign(reference, options)
-  } else {
-    throw new TypeError('Provided parameter "options", should be string or object.')
-  }
-
-  const check = checker.validify(options, checksDefaultOptions)
-
-  if (check.hasErrors()) {
-    throw Object.assign(new Error('Invalid options provided.'), {
-      errors: check.getErrors()
-    })
-  }
-
-  return options
+const DEFAULT_OPTIONS = {
+  path: null,
+  maxSize: '10m',
+  maxTime: '1D',
+  maxArchives: 10,
+  archivesDirectory: null,
+  compressType: 'gzip',
+  highWaterMark: 16384
 }
 
 /**
- * Get default lib options.
+ * @param {RotationFileStream:Options} options
  * @returns {object}
  */
-function getDefaultOptions () {
-  return {
-    path: null,
-    size: '10m',
-    time: '1D',
-    files: 14,
-    compress: 'gzip',
-    highWaterMark: 16384
+function ensureOptions (options) {
+  const opts = Object.assign({}, DEFAULT_OPTIONS, options)
+
+  ensurePath(opts)
+  ensureMaxSize(opts)
+  ensureMaxTime(opts)
+  ensureMaxArchives(opts)
+  ensureArchivesDirectory(opts)
+  ensureCompressType(opts)
+  ensureHighWaterMark(opts)
+
+  return opts
+}
+
+/**
+ * @param {RotationFileStream:Options} options
+ * @returns {void}
+ * @throws {Error}
+ */
+function ensurePath (options) {
+  if (typeof options.path !== 'string' || !options.path.match(utils.PATH_REGEX)) {
+    throw new Error('The "path" argument must be a valid string path.')
+  }
+}
+
+/**
+ * @param {RotationFileStream:Options} options
+ * @returns {void}
+ * @throws {Error}
+ */
+function ensureMaxSize (options) {
+  if (typeof options.maxSize === 'string') {
+    Object.assign(options, {
+      maxSize: utils.unfriendlize(options.maxSize, SIZE_UNITS)
+    })
+  }
+
+  if (!utils.isNullOrPositiveInteger(options.maxSize)) {
+    throw new Error(
+      'The "maxSize" argument must be a valid string tag, a positive integer number or null.'
+    )
+  }
+}
+
+/**
+ * @param {RotationFileStream:Options} options
+ * @returns {void}
+ * @throws {Error}
+ */
+function ensureMaxTime (options) {
+  if (typeof options.maxTime === 'string') {
+    Object.assign(options, {
+      maxTime: utils.unfriendlize(options.maxTime, TIME_UNITS)
+    })
+  }
+
+  if (!utils.isNullOrPositiveInteger(options.maxTime)) {
+    throw new Error(
+      'The "maxTime" argument must be a valid string tag, a positive integer number or null.'
+    )
+  }
+}
+
+/**
+ * @param {RotationFileStream:Options} options
+ * @returns {void}
+ * @throws {Error}
+ */
+function ensureMaxArchives (options) {
+  if (!utils.isNullOrPositiveInteger(options.maxArchives)) {
+    throw new Error('The "maxArchives" argument must be a positive integer number or null.')
+  }
+}
+
+/**
+ * @param {RotationFileStream:Options} options
+ * @returns {void}
+ * @throws {Error}
+ */
+function ensureArchivesDirectory (options) {
+  if (!options.archivesDirectory) {
+    Object.assign(options, {
+      archivesDirectory: path.dirname(options.path)
+    })
+  }
+
+  if (typeof options.archivesDirectory !== 'string' || !options.archivesDirectory.match(utils.PATH_REGEX)) {
+    throw new Error('The "archivesDirectory" argument must be a valid string path.')
+  }
+}
+
+/**
+ * @param {RotationFileStream:Options} options
+ * @returns {void}
+ * @throws {Error}
+ */
+function ensureCompressType (options) {
+  if (options.compressType !== null && !Object.keys(COMPRESSION_TYPES).includes(options.compressType)) {
+    throw new Error('The "compressType" argument must be a valid registered type.')
+  }
+}
+
+/**
+ * @param {RotationFileStream:Options} options
+ * @returns {void}
+ * @throws {Error}
+ */
+function ensureHighWaterMark (options) {
+  if (options.highWaterMark <= 0 || !Number.isInteger(options.highWaterMark)) {
+    throw new Error('The "highWaterMark" argument must be a positive integer number.')
   }
 }
 
 module.exports = {
-  checkOptions,
-  getDefaultOptions
+  DEFAULT_OPTIONS,
+  ensureOptions,
+  ensurePath,
+  ensureMaxSize,
+  ensureMaxTime,
+  ensureMaxArchives,
+  ensureArchivesDirectory,
+  ensureCompressType,
+  ensureHighWaterMark
 }

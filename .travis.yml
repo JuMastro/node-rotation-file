@@ -1,5 +1,6 @@
 language: node_js
 node_js:
+  - "12"
   - "11"
   - "10"
 branches:
@@ -15,12 +16,13 @@ stages:
   - name: test
   - name: npm release
     if: tag =~ /^\d+\.\d+\.\d+[a-z-]*$/
+script: npm run coverage
 after_script:
   - ./cc-test-reporter after-build format-coverage -t lcov --exit-code $TRAVIS_TEST_RESULT
 jobs:
   include:
     - stage: npm release
-      node_js: "11"
+      node_js: "12"
       script: echo "Deploying to npm ..."
       deploy:
         provider: npm

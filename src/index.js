@@ -1,146 +1,129 @@
 const fs = require('fs')
+const path = require('path')
 const { Writable } = require('stream')
-const { checkOptions } = require('./options.js')
-const { TracableError } = require('./errors.js')
-const fm = require('./fm.js')
-const rotationProcessor = require('./rotation.js')
-const interval = require('./interval.js')
-const size = require('./size.js')
-const time = require('./time.js')
+const { ensureOptions } = require('./options.js')
+const { makeStreamRotation } = require('./rotation.js')
 
 /**
- * Class RotationFileStream.
- * @extends {Writable}
+ * The RotationFileStream constructor options object.
+ * @typedef {object} RotationFileStream~Options
+ * @prop {string} path - The file path location.
+ * @prop {null|number|string} [maxSize='10m'] - The size as integer number, string tag or null.
+ * @prop {null|number|string} [maxTime='1D'] - The time as integer number, string tag or null.
+ * @prop {null|number} [maxArchives=14] - The number of file to keep in history.
+ * @prop {null|string} [archivesDirectory=dirname(path)] - The directory location where archives are stored.
+ * @prop {null|string} [compressType='gzip'] - The type of compression.
  */
-class RotationFileStream extends Writable {
+
+module.exports = class RotationFileStream extends Writable {
+  /**
+   * Check, init and set properties and listeners.
+   * @param {RotationFileStream:Options} options - The {@link RotationFileStream:Options} options object.
+   */
   constructor (options = {}) {
-    options = checkOptions(options)
+    const opts = ensureOptions(options)
+    super(opts)
 
-    super(options)
+    this.path = opts.path
+    this.compressType = opts.compressType
+    this.maxSize = opts.maxSize
+    this.maxTime = opts.maxTime
+    this.maxArchives = opts.maxArchives
+    this.archivesDirectory = opts.archivesDirectory
 
-    this.path = options.path
-    this.compress = options.compress
-    this.maxSize = size.unfriendlyze(options.size)
-    this.maxTime = time.unfriendlyze(options.time)
-    this.maxFiles = options.files
-    this.highWaterMark = options.highWaterMark
-
-    this.chunks = []
-    this.size = null
     this.birthtime = null
+    this.size = null
     this.error = null
     this.writer = null
+    this.queue = []
 
-    this.ended = false
-    this.ending = false
     this.writing = false
     this.rotating = false
+    this.ending = false
+    this.ended = false
 
+    this.once('init', this._init)
     this.once('error', this._error)
-    this.on('init', this._init)
     this.on('open', this._open)
+    this.on('ready', this._drain)
     this.on('close', this._close)
     this.on('drain', this._drain)
-    this.on('rotate', this._rotate)
+    this.on('rotate', makeStreamRotation.bind(this))
 
-    this.emit('init')
+    setImmediate(() => this.emit('init'))
   }
 
   /**
-   * Method to start 'end' event.
-   * It optionaly add a last chunk, next it consume the
-   * last pending chunks using '_drain()' method & 'ending' state.
-   * @param {Buffer} chunk - Last chunk data.
-   * @param {string} encoding - Encoding type.
-   * @param {function} callback - Callback action.
-   * @return {RotationFileStream} this
+   * Check if the stream is writable.
+   * @returns {boolean}
    */
-  end (chunk, encoding, callback) {
+  isWritable () {
+    return this.writer !== null && !this.writing && !this.rotating
+  }
+
+  /**
+   * Starts to ending the stream, and write a last chunk if once provided.
+   * See: https://nodejs.org/api/stream.html#stream_writable_end_chunk_encoding_callback
+   * @param {Buffer|string|any} chunk - Last chunk to add to queue.
+   * @param {string} encoding - Chunk encoding for string chunks.
+   * @param {Function} nextEvent - Function is called once the chunk has been written.
+   * @returns {void}
+   */
+  end (chunk, encoding, nextEvent) {
     this.ending = true
 
-    if (callback) {
-      this.on('finish', callback)
-    }
-
     if (chunk) {
-      this.chunks.push({ chunk })
+      this.prependOnceListener('close', () => {
+        this.queue.push({ chunk, nextEvent })
+        this._drain()
+      })
     }
 
-    this.emit('drain')
-
-    return this
+    this._drain()
   }
 
   /**
-   * Method to init stream process.
-   * This method will create the directory path and the output file,
-   * before opening the substream to write.
-   * @param {number} retry - Retry count before stop.
+   * Run the timeout rotation.
    * @returns {void}
    */
-  async _init (retry = 1) {
-    try {
-      const stat = await fm.stat(this.path)
-
-      if (!stat) {
-        if (!retry) {
-          throw new Error('Impossible to init the stream process... Check perms and path.')
-        }
-
-        await fm.makePath(this.path, 'a')
-
-        return this.emit('init', --retry)
-      }
-
-      if (this.maxTime) {
-        setImmediate(() => {
-          interval.initTimeRotation.call(this)
-        })
-      }
-
-      this.size = stat.size
-      this.birthtime = stat.birthtime
-
-      this.emit('open')
-    } catch (err) {
-      this.emit('error', new TracableError(err))
-    }
+  _createTimeoutRotation () {
+    const limit = this.maxTime - (new Date().getTime() - this.birthtime.getTime())
+    const timeout = setTimeout(() => this.emit('rotate'), limit)
+    this.once('close', () => clearTimeout(timeout))
   }
 
   /**
-   * Method to init rotation process.
-   * The rotation will change the writing file by transforming
-   * the current one into an archive and create a new one to write again.
-   * After this action the writing can be process again, the compression
-   * and the cleaning of the too old archives will be done in parallel if necessary.
+   * Init the stream.
+   * Prepares the directories of `path` and `archivesDirectory`.
    * @returns {void}
    */
-  _rotate () {
-    this.emit('close', rotationProcessor.run.bind(this))
+  async _init () {
+    await fs.promises.mkdir(path.dirname(this.path), { recursive: true })
+    await fs.promises.mkdir(this.archivesDirectory, { recursive: true })
+    this.emit('open')
   }
 
   /**
-   * Method to create and open a substream that will do the writing to files.
-   * This method will create and open a writing stream, trace errors,
-   * and try to consume the chunks on hold using '_drain()' method.
+   * Open the sub-writer stream.
    * @returns {void}
    */
   _open () {
     const writer = fs.createWriteStream(this.path, { flags: 'a' })
+    writer.once('error', (err) => this.emit('error', err))
+    writer.once('open', async () => {
+      const { birthtime, size } = await fs.promises.stat(this.path)
+      Object.assign(this, { birthtime, size, writer, ended: false })
+      this.emit('ready')
 
-    writer.once('error', (err) => {
-      this.emit('error', new TracableError(err))
-    })
-
-    writer.once('open', (fd) => {
-      this.writer = writer
-      this.emit('drain')
+      if (this.maxTime) {
+        this._createTimeoutRotation()
+      }
     })
   }
 
   /**
-   * Method to close substream.
-   * @param {function} next - Next action.
+   * Close the writer stream.
+   * @param {Function} next - Event triggered after the closing of the writer.
    * @returns {void}
    */
   _close (next) {
@@ -154,93 +137,87 @@ class RotationFileStream extends Writable {
   }
 
   /**
-   * Method to drain pending chunk.
-   * It check process state validity,
-   * next it's send first pending chunk to sub writer stream.
+   * Store an error and start the end of stream.
+   * @param {Object|Error} err
    * @returns {void}
-   */
-  _drain () {
-    if (!this.writer || this.writing || this.rotating) {
-      return
-    }
-
-    if (!this.chunks.length) {
-      if (this.ending) {
-        this.emit('close', () => {
-          this.ended = true
-          this.ending = false
-          this.emit('finish')
-        })
-      }
-      return
-    }
-
-    if (this.maxSize && this.size >= this.maxSize) {
-      return this.emit('rotate')
-    }
-
-    this._consumeChunkEntity(this.chunks.shift())
-  }
-
-  /**
-   * Method to write chunk using sub writer stream.
-   * @param {object} chunkEntity - An object contains 'chunk' and 'callback'.
-   * @returns {void}
-   */
-  _consumeChunkEntity (chunkEntity) {
-    this.size += chunkEntity.chunk.length
-    this.writing = true
-    this.writer.write(chunkEntity.chunk, (err) => {
-      this.writing = false
-
-      if (err) {
-        this.emit('error', new TracableError(err))
-      }
-
-      if (chunkEntity.cb) {
-        chunkEntity.cb()
-      }
-
-      this.emit('drain')
-    })
-  }
-
-  /**
-   * Method to write a chunk.
-   * @param {Buffer} chunk - Chunk data.
-   * @param {string} encoding - Encoding type.
-   * @param {function} cb - Callback function.
-   * @returns {void}
-   */
-  _write (chunk, encoding, cb) {
-    this.chunks.push({ chunk, cb })
-    this._drain()
-  }
-
-  /**
-   * Method for writing multiple chunks simultaneously
-   * @param {Array} chunks - List of chunks.
-   * @param {function} cb - Callback function.
-   * @returns {void}
-   */
-  _writev (chunks, cb) {
-    Object.assign(chunks[chunks.length - 1], { cb })
-    this.chunks = this.chunks.concat(chunks)
-    this._drain()
-  }
-
-  /**
-   * Capture error & run 'end' action.
-   * @param {object|Error} err
    */
   _error (err) {
     this.error = err
     this.end()
   }
+
+  /**
+   * Attempt to consume pending queued chunks.
+   * @returns {void}
+   */
+  _drain () {
+    if (!this.isWritable()) {
+      return
+    }
+
+    if (!this.queue.length) {
+      if (this.ending) {
+        this.emit('close', () => {
+          this.ending = false
+          this.ended = true
+          this.emit('finish')
+        })
+      }
+
+      return
+    }
+
+    if (this.maxSize && this.maxSize <= this.size) {
+      this.emit('rotate')
+      return
+    }
+
+    this._consumePendingChunk()
+  }
+
+  _consumePendingChunk () {
+    const item = this.queue.shift()
+    this.writing = true
+    this.writer.write(item.chunk, (err) => {
+      this.writing = false
+      this.size += item.chunk.length
+
+      if (err) {
+        this.emit('error', err)
+      }
+
+      if (item.nextEvent) {
+        item.nextEvent(err)
+      }
+
+      this._drain()
+    })
+  }
+
+  /**
+   * Send chunk to the underlying resource.
+   * See: https://nodejs.org/api/stream.html#stream_writable_write_chunk_encoding_callback_1
+   * @param {Buffer|string|any} chunk - Chunk to add to queue.
+   * @param {string} encoding - Chunk encoding for string chunks.
+   * @param {Function} nextEvent - Function is called once the chunk has been written.
+   * @returns {void}
+   */
+  _write (chunk, encoding, nextEvent) {
+    this.queue.push({ chunk, nextEvent })
+    this._drain()
+  }
+
+  /**
+   * Send chunks to the underlying resource.
+   * Used when several chunks are written together, so they will be processed by group to be more efficient.
+   * See: https://nodejs.org/api/stream.html#stream_writable_writev_chunks_callback
+   * @param {Object[]} chunk - Chunks to add to queue.
+   * @param {Function} nextEvent - Function is called once the chunks have been written.
+   * @returns {void}
+   */
+  _writev (chunks, nextEvent) {
+    Object.assign(chunks[chunks.length - 1], { nextEvent })
+    this.queue = this.queue.concat(chunks)
+    this._drain()
+  }
 }
-
-const rfs = (options) => new RotationFileStream(options)
-
-module.exports = rfs
-module.exports.rfs = rfs
-module.exports.RotationFileStream = RotationFileStream

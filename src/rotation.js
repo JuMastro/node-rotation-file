@@ -1,47 +1,44 @@
-const EventEmitter = require('events')
-const { TracableError } = require('./errors.js')
-const compressor = require('./compressor.js')
-const { fm, promised } = require('./fm.js')
-const history = require('./history.js')
-const namer = require('./namer.js')
+const { rename, unlink } = require('fs').promises
+const path = require('path')
+const { getArchiveName, getArchivePattern } = require('./archives.js')
+const { getOldestFiles } = require('./history.js')
+const { compressFile } = require('./compresser.js')
 
 /**
- * Make a file rotation.
- * Make a rotation file, compress if needed & delete oldier history.
+ * Make a rotation file stream for a RotationFileStream instance.
+ * The context of this function must be binded on a RotationFileStream instance.
  * @returns {void}
- * @throws {Error}
  */
-async function run () {
-  if (!(this instanceof EventEmitter)) {
-    throw new Error(
-      'The context of function, should be binding from an EventEmitter instance.'
-    )
-  }
+async function makeStreamRotation () {
+  this.rotating = true
 
-  try {
-    this.rotating = true
-    const removeQueue = []
-    const generatedPath = namer(this.path, this.birthtime)
-    await promised.rename(this.path, generatedPath)
-    await fm.makePath(this.path)
-    this.rotating = false
+  this.emit('close', async () => {
+    try {
+      const archiveName = getArchiveName(this.path, this.birthtime, this.compressType)
+      const archiveInit = path.resolve(this.archivesDirectory, archiveName)
+      let archivePath = archiveInit
+      await rename(this.path, archiveInit)
 
-    setImmediate(async () => {
-      if (this.compress) {
-        await compressor.call(this, generatedPath, this.compress)
-        removeQueue.push(generatedPath)
+      if (this.compressType) {
+        archivePath = await compressFile(archiveInit, this.compressType)
+        await unlink(archiveInit)
       }
 
-      const oldiers = await history.getOldiers(this.path, this.compress, this.maxFiles)
+      if (this.maxArchives) {
+        const archivePattern = getArchivePattern(this.path, this.compressType)
+        const archives = await getOldestFiles(this.archivesDirectory, archivePattern, this.maxArchives)
+        await Promise.all(archives.map(unlink))
+      }
 
-      removeQueue.concat(oldiers).forEach((file) => promised.rm(file))
-    })
-
-    this.emit('init')
-  } catch (err) {
-    this.rotating = false
-    this.emit('error', new TracableError(err))
-  }
+      this.rotating = false
+      this.emit('archive', { type: this.compressType || 'raw', path: archivePath })
+      this.emit('open')
+    } catch (err) {
+      this.emit('error', err)
+    }
+  })
 }
 
-module.exports = { run }
+module.exports = {
+  makeStreamRotation
+}
