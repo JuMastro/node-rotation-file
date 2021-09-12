@@ -6,11 +6,11 @@ const { createGzip, createBrotliCompress } = require('zlib')
 const pipeline = promisify(pipelineCb)
 
 const COMPRESSION_TYPES = {
-  'gzip': {
+  gzip: {
     createCompressStream: createGzip,
     extention: 'gz'
   },
-  'brotli': {
+  brotli: {
     createCompressStream: createBrotliCompress,
     extention: 'br'
   }
