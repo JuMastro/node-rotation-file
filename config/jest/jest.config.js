@@ -1,7 +1,7 @@
 const path = require('path')
 
 module.exports = {
-  notify: true,
+  notify: false,
   verbose: true,
   rootDir: '../../',
   testMatch: [

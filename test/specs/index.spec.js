@@ -6,11 +6,13 @@ const Rfs = require(path.resolve(__root, 'src/index.js'))
 
 describe('__functionnals__', () => {
   const fnPath = path.resolve(__tmp, 'index/__fn__')
+  let rfs
 
   beforeAll(() => fs.mkdir(fnPath))
+  afterEach(() => rfs && rfs.end())
 
   test('write single chunk', (done) => {
-    const rfs = new Rfs({ path: path.resolve(fnPath, 'single-chunk.log') })
+    rfs = new Rfs({ path: path.resolve(fnPath, 'single-chunk.log') })
     rfs.write('single-chunk', null, async () => {
       const file = await fs.readFile(rfs.path, { encoding: 'utf8' })
       expect(file).toBe('single-chunk')
@@ -19,7 +21,7 @@ describe('__functionnals__', () => {
   })
 
   test('write multiple chunks, then ending the stream', async () => {
-    const rfs = new Rfs({ path: path.resolve(fnPath, 'multiple-chunks-ending.log') })
+    rfs = new Rfs({ path: path.resolve(fnPath, 'multiple-chunks-ending.log') })
 
     for (let i = 0; i <= 100; ++i) {
       rfs.write('chunk' + i)
@@ -33,7 +35,7 @@ describe('__functionnals__', () => {
   })
 
   test('write multiple chunks, then ending the stream by emitting an error', async () => {
-    const rfs = new Rfs({ path: path.resolve(fnPath, 'multiple-chunks-error.log') })
+    rfs = new Rfs({ path: path.resolve(fnPath, 'multiple-chunks-error.log') })
 
     for (let i = 0; i <= 100; ++i) {
       rfs.write('chunk' + i)

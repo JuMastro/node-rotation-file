@@ -18,8 +18,8 @@ describe('compressFile()', () => {
   })
 
   test('compress as `gzip`', async () => {
-    const input = path.resolve(functionPath, `compress_file_0`)
-    const dist = path.resolve(functionPath, `compress_file_0.gz`)
+    const input = path.resolve(functionPath, 'compress_file_0')
+    const dist = path.resolve(functionPath, 'compress_file_0.gz')
     const inputStat = await stat(input)
     const output = await compressFile(input, 'gzip')
     const outputStat = await stat(output)
@@ -28,8 +28,8 @@ describe('compressFile()', () => {
   })
 
   test('compress as `brotli`', async () => {
-    const input = path.resolve(functionPath, `compress_file_1`)
-    const dist = path.resolve(functionPath, `compress_file_1.br`)
+    const input = path.resolve(functionPath, 'compress_file_1')
+    const dist = path.resolve(functionPath, 'compress_file_1.br')
     const inputStat = await stat(input)
     const output = await compressFile(input, 'brotli')
     const outputStat = await stat(output)

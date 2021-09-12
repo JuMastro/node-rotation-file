@@ -13,5 +13,8 @@ module.exports = {
   globals: {
     __root: true,
     __tmp: true
+  },
+  rules: {
+    'no-async-promise-executor': 0
   }
 }
